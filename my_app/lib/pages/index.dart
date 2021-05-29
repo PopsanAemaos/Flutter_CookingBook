@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:my_app/services/authentication.dart';
+import 'package:my_app/pages/mylist/mylist.dart';
 import 'package:my_app/pages/home/home.dart';
-import 'package:my_app/pages/bottomBar/mylist.dart';
-import 'package:my_app/pages/bottomBar/favorite.dart';
+import 'package:my_app/pages/favorite/favorite.dart';
 import 'package:my_app/pages/profile/profile.dart';
 
 class Index extends StatefulWidget {
@@ -13,46 +13,38 @@ class Index extends StatefulWidget {
   final BaseAuth auth;
   final VoidCallback logoutCallback;
   final String userId;
-
   @override
   State<StatefulWidget> createState() => new _IndexState();
-  void signOut() async {
-    try {
-      print(this.auth);
-      await this.auth.signOut();
-      this.logoutCallback();
-    } catch (e) {
-      print(e);
-    }
-  }
 }
 
 class _IndexState extends State<Index> with SingleTickerProviderStateMixin {
-  @override
   TabController controller;
-  static const routeName = '/';
   int _selectedIndex = 0;
   List<Widget> _pageWidget = <Widget>[
-    new Home(),
+    Home(),
     Favorite(),
-    Mylist(),
+    MyList(),
     ProfileScreen(),
   ];
   List<BottomNavigationBarItem> _menuBar = <BottomNavigationBarItem>[
     BottomNavigationBarItem(
       icon: Icon(FontAwesomeIcons.home),
+      // ignore: deprecated_member_use
       title: Text('Home'),
     ),
     BottomNavigationBarItem(
       icon: Icon(FontAwesomeIcons.solidHeart),
+            // ignore: deprecated_member_use
       title: Text('Favorite'),
     ),
     BottomNavigationBarItem(
       icon: Icon(FontAwesomeIcons.list),
+      // ignore: deprecated_member_use
       title: Text('Mylist'),
     ),
     BottomNavigationBarItem(
       icon: Icon(FontAwesomeIcons.userAlt),
+      // ignore: deprecated_member_use
       title: Text('Profile'),
     ),
   ];
@@ -63,7 +55,7 @@ class _IndexState extends State<Index> with SingleTickerProviderStateMixin {
     });
   }
 
-  signOut() async {
+  void signOut() async {
     try {
       await widget.auth.signOut();
       widget.logoutCallback();
@@ -84,7 +76,7 @@ class _IndexState extends State<Index> with SingleTickerProviderStateMixin {
               onPressed: signOut)
         ],
       ),
-      body: _pageWidget.elementAt(_selectedIndex),
+      body: _pageWidget[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: _menuBar,
         currentIndex: _selectedIndex,

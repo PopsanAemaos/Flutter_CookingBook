@@ -65,9 +65,31 @@ app.get('/recipe', async (req, res) => {
   //   total: resRecipe.length,
   //   data: resRecipe
   // }
+  // console.log('[get] => recipe', resRecipe);
+  return res.status(200).json(resRecipe)
+})
+
+app.get('/recipeuser', async (req, res) => {
+  console.log('[get] => recipe');
+  const {
+    recipe_id
+  } = req.query
+  let query = {}
+  if(recipe_id){
+    query = {
+      _id:recipe_id
+    }
+    delete req.query.recipe_id
+  } 
+  const resRecipe = await recipe.find(query)
+  // const result  = {
+  //   total: resRecipe.length,
+  //   data: resRecipe
+  // }
   console.log('[get] => recipe', resRecipe);
   return res.status(200).json(resRecipe)
 })
+
 
 app.post('/recipe', async (req, res) => {
   console.log('[post] => recipe');
@@ -76,14 +98,16 @@ app.post('/recipe', async (req, res) => {
     ingredient,
     method,
     descripttion,
-    images
+    images,
+    user_id
   } = req.body
   const result = await recipe.create({
     title,
     ingredient,
     method,
     descripttion,
-    images
+    images,
+    user_id
   })
   return res.status(201).json(result)
 })

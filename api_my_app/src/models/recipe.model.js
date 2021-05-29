@@ -22,6 +22,9 @@ const recipe = new Schema({
   images: {
     type: String,
   },
+  user_id:{
+    type: ObjectId,
+  },
   updated_at: Date,
   created_at: Date
 }, {

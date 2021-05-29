@@ -1,7 +1,3 @@
-import 'dart:ffi';
-
-import 'package:flutter/material.dart';
-
 class Recipe {
   final String id;
   final String title;
@@ -27,8 +23,8 @@ class Recipe {
       title: json['title'] as String,
       ingredient: json['ingredient'] as List,
       method: json['method'] as List,
-      description: json['description'] as String,
-      userId: json['userId'] as String,
+      description: json['descripttion'] as String,
+      userId: json['user_id'] as String,
       images: json['images'] as String
     );
   }

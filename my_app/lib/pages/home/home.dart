@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:my_app/services/authentication.dart';
 
 import 'package:flutter/material.dart';
 import 'package:my_app/services/http.dart';
@@ -6,13 +7,19 @@ import 'package:my_app/pages/home/list-recipe.dart';
 import 'package:my_app/models/recipe.dart';
 
 class Home extends StatefulWidget {
+  Home({Key key, this.auth, this.userId, this.logoutCallback})
+      : super(key: key);
+  final BaseAuth auth;
+  final VoidCallback logoutCallback;
+  final String userId;
+
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   TabController controller;
-
+  final TextEditingController _controller = new TextEditingController();
   final HttpService httpService = HttpService();
   // List<AddFood> loadedFoods = [];
   int getColorHexFromStr(String colorStr) {
@@ -37,11 +44,32 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     return val;
   }
 
+  bool _isSearching;
+  String _searchText = "";
+  List searchresult = new List();
+  String searchString = "";
+
+  _SearchListState() {
+    _controller.addListener(() {
+      if (_controller.text.isEmpty) {
+        setState(() {
+          _isSearching = false;
+          _searchText = "";
+        });
+      } else {
+        setState(() {
+          _isSearching = true;
+          _searchText = _controller.text;
+        });
+      }
+    });
+  }
+
   @override
   void initState() {
     // _querystring = "";
     super.initState();
-    // this.querydata();
+    _isSearching = false;
     // var request = http.Request(
     //     'GET',
     //     Uri.parse('http://localhost:3030/recipe?'));
@@ -57,6 +85,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     // TODO: implement dispose
     controller.dispose();
     super.dispose();
+  }
+
+  void searchOperation(String searchText) {
+    searchresult.clear();
+    if (_isSearching != null) {
+      print(searchText);
+      // for (int i = 0; i < _list.length; i++) {
+      //   String data = _list[i];
+      //   if (data.toLowerCase().contains(searchText.toLowerCase())) {
+      //     searchresult.add(data);
+      //   }
+      // }
+    }
   }
 
   @override
@@ -143,6 +184,12 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                           elevation: 5.0,
                           borderRadius: BorderRadius.circular(5.0),
                           child: TextFormField(
+                              controller: _controller,
+                              // onChanged: (value) {
+                              //   setState((){
+                              //     searchString = value;
+                              //   });
+                              // },
                               decoration: InputDecoration(
                                   border: InputBorder.none,
                                   prefixIcon: Icon(Icons.search,
@@ -159,14 +206,12 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       ),
                       SizedBox(height: 10.0),
                       // MyWidget()
-
                     ],
-                  )
+                  ),
                 ],
               ),
               SizedBox(height: 10.0),
-              Consumer
-              // itemCard('FinnNavian', 'assets/ottomRan.jpg', false , 'sss'),
+              itemCard('FinnNavian', 'assets/ottomRan.jpg', false, 'sss'),
               // itemCard('FinnNavian', 'assets/anotherchair.jpg', true),
               // itemCard('FinnNavian', 'assets/chair.jpg', true)
             ],
@@ -175,7 +220,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       ),
     );
   }
-  Widget itemCard(String title, String imgPath, bool isFavorite, String description) {
+
+  Widget itemCard(
+      String title, String imgPath, bool isFavorite, String description) {
     return Padding(
       padding: EdgeInsets.only(left: 15.0, right: 15.0, top: 15.0),
       child: Container(
@@ -245,123 +292,31 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 }
+
 class MyWidget extends StatelessWidget {
   final HttpService httpService = HttpService();
 
   @override
   Widget build(BuildContext context) {
-    return  FutureBuilder(
-           future: httpService.getRecipe(),
-           builder: (BuildContext context, AsyncSnapshot<List<Recipe>> snapshot){
-             print(snapshot);
-             if(snapshot.hasData){
-               List<Recipe> recipes = snapshot.data;
-               print(recipes);
-               return ListView(
-                 children: recipes
-                      .map(
-                        // (Recipe recipe) => ListView(
-                        //   itemCard(recipe.title, recipe.images, true, recipe.description)
-                        // )
-                          (Recipe recipe) => ListTile(
-                          title: Text(recipe.title),
-                          subtitle: Text(recipe.description.toString())
-                        )
-
-                      )
-                      .toList()
-               );
-             }
-             return CircularProgressIndicator();
-           }
-    );
-    // return FutureBuilder(
-    //   future: Future.delayed(Duration(seconds: 2)),
-    //   builder: (context, snapshot) {
-    //     if (snapshot.connectionState != ConnectionState.done) {
-    //       return Center(child: CircularProgressIndicator());
-    //     }
-    //     return ListView(
-    //       children: [
-    //         Container(height: 150, color: Colors.red),
-    //         Container(height: 150, color: Colors.yellow),
-    //         Container(height: 150, color: Colors.blue),
-    //         Container(height: 150, color: Colors.orange),
-    //         Container(height: 150, color: Colors.red),
-    //       ],
-    //     );
-    //   },
-    // );
+    return new Scaffold(
+        body: FutureBuilder(
+            future: httpService.getRecipe(),
+            builder:
+                (BuildContext context, AsyncSnapshot<List<Recipe>> snapshot) {
+              print(snapshot);
+              print("snapshot");
+              if (snapshot.hasData) {
+                List<Recipe> recipes = snapshot.data;
+                print(recipes);
+                return ListView(
+                    children: recipes
+                        .map((Recipe recipe) => ListTile(
+                              title: Text(recipe.title),
+                              subtitle: Text(recipe.description.toString()),
+                            ))
+                        .toList());
+              }
+              return CircularProgressIndicator();
+            }));
   }
-
-    Widget itemCard(String title, String imgPath, bool isFavorite, String description) {
-    return Padding(
-      padding: EdgeInsets.only(left: 15.0, right: 15.0, top: 15.0),
-      child: Container(
-        height: 150.0,
-        width: double.infinity,
-        color: Colors.white,
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 140.0,
-              height: 150.0,
-              decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage(imgPath), fit: BoxFit.cover)),
-            ),
-            SizedBox(width: 4.0),
-            Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Text(
-                      title,
-                      style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 17.0,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(width: 45.0),
-                    Material(
-                      elevation: isFavorite ? 0.0 : 2.0,
-                      borderRadius: BorderRadius.circular(20.0),
-                      child: Container(
-                        height: 40.0,
-                        width: 40.0,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
-                            color: isFavorite
-                                ? Colors.grey.withOpacity(0.2)
-                                : Colors.white),
-                        child: Center(
-                          child: isFavorite
-                              ? Icon(Icons.favorite_border)
-                              : Icon(Icons.favorite, color: Colors.red),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-                SizedBox(height: 5.0),
-                Container(
-                  width: 175.0,
-                  child: Text(
-                    description,
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                        fontFamily: 'Quicksand',
-                        color: Colors.grey,
-                        fontSize: 12.0),
-                  ),
-                ),
-                SizedBox(height: 5.0),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
 }

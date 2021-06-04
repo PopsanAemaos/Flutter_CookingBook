@@ -20,11 +20,39 @@ class Index extends StatefulWidget {
 class _IndexState extends State<Index> with SingleTickerProviderStateMixin {
   TabController controller;
   int _selectedIndex = 0;
+  void signOut() async {
+    print(widget.userId);
+    // flutter: SDicxbI1SIaCMXEr1aEfIhc3bAB2
+    try {
+      await widget.auth.signOut();
+      widget.logoutCallback();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // _pageWidget.add(
+    //   Favorite(userId: widget.userId),
+    // );
+    _pageWidget.add(
+      MyList(userId: widget.userId),
+    );
+    _pageWidget.add(
+      ProfileScreen(
+          userId: widget.userId,
+          auth: widget.auth,
+          logoutCallback: widget.logoutCallback),
+    );
+  }
+
   List<Widget> _pageWidget = <Widget>[
     Home(),
-    Favorite(),
-    MyList(),
-    ProfileScreen(),
+    // Favorite(),
+    // MyList(userId: userId,),
+    // ProfileScreen(),
   ];
   List<BottomNavigationBarItem> _menuBar = <BottomNavigationBarItem>[
     BottomNavigationBarItem(
@@ -32,11 +60,11 @@ class _IndexState extends State<Index> with SingleTickerProviderStateMixin {
       // ignore: deprecated_member_use
       title: Text('Home'),
     ),
-    BottomNavigationBarItem(
-      icon: Icon(FontAwesomeIcons.solidHeart),
-            // ignore: deprecated_member_use
-      title: Text('Favorite'),
-    ),
+    // BottomNavigationBarItem(
+    //   icon: Icon(FontAwesomeIcons.solidHeart),
+    //   // ignore: deprecated_member_use
+    //   title: Text('Favorite'),
+    // ),
     BottomNavigationBarItem(
       icon: Icon(FontAwesomeIcons.list),
       // ignore: deprecated_member_use
@@ -55,27 +83,18 @@ class _IndexState extends State<Index> with SingleTickerProviderStateMixin {
     });
   }
 
-  void signOut() async {
-    try {
-      await widget.auth.signOut();
-      widget.logoutCallback();
-    } catch (e) {
-      print(e);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('Flutter login demo'),
-        actions: <Widget>[
-          new FlatButton(
-              child: new Text('Logout',
-                  style: new TextStyle(fontSize: 17.0, color: Colors.white)),
-              onPressed: signOut)
-        ],
-      ),
+      // appBar: new AppBar(
+      //   title: new Text('Yummy trick'),
+        // actions: <Widget>[
+        //   new FlatButton(
+        //       child: new Text('Logout',
+        //           style: new TextStyle(fontSize: 17.0, color: Colors.white)),
+        //       onPressed: signOut)
+        // ],
+      // ),
       body: _pageWidget[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: _menuBar,

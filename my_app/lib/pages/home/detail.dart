@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:my_app/models/recipe.dart';
 import 'package:my_app/services/http.dart';
 
-class ListDetail extends StatelessWidget {
+class Detail extends StatelessWidget {
   final Recipe recipe;
   final HttpService httpService = HttpService();
 
-  ListDetail({this.recipe});
+  Detail({this.recipe});
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
         appBar: AppBar(),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.delete),
-            onPressed: () async {
-              await httpService.deleteRecipe(recipe.id);
-              Navigator.of(context).pop();
-            },
-        ),
+        // floatingActionButton: FloatingActionButton(
+        //   child: Icon(Icons.delete),
+        //     onPressed: () async {
+        //       await httpService.deleteRecipe(recipe.id);
+        //       Navigator.of(context).pop();
+        //     },
+        // ),
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(12.0),

@@ -19,6 +19,9 @@ const user = new Schema({
   lanme: {
     type: String,
   },
+  user_id:{
+    type: String,
+  },
   updated_at: Date,
   created_at: Date
 }, {

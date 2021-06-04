@@ -46,33 +46,30 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
       String userId = "";
       try {
         if (_isLoginForm) {
-          await widget.auth.signIn(_email, _password);
+          userId = await widget.auth.signIn(_email, _password);
           var request = http.Request(
               'GET',
               Uri.parse(
-                  'http://localhost:3030/user?username=$_email&password=$_password'));
-          http.StreamedResponse response = await request.send();
-          Map<String, dynamic> responseJson =
-          jsonDecode(await response.stream.bytesToString());
-          userId = responseJson["_id"];
+                  'http://localhost:30301/user?username=$_email&password=$_password'));
+          await request.send();
+          // http.StreamedResponse response = await request.send();
+          // Map<String, dynamic> responseJson =
           print('Signed in: $userId');
         } else {
-          await widget.auth.signUp(_email, _password);
+          userId = await widget.auth.signUp(_email, _password);
           var headers = {'Content-Type': 'application/json'};
           var request =
-              http.Request('POST', Uri.parse('http://localhost:3030/user'));
+              http.Request('POST', Uri.parse('http://localhost:30301/user'));
           request.body = jsonEncode({
             "username": _email,
             "password": _password,
             "fname": _fname,
             "lname": _lname,
+            "user_id": userId
           });
           request.headers.addAll(headers);
-          http.StreamedResponse response = await request.send();
-          Map<String, dynamic> responseJson =
-              jsonDecode(await response.stream.bytesToString());
+          await request.send();
           await widget.auth.signIn(_email, _password);
-          userId = responseJson["_id"];
           _isLoginForm = true;
           print('Signed up user: $userId');
         }
@@ -240,7 +237,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
           maxLines: 1,
           autofocus: false,
           decoration: new InputDecoration(
-              hintText: 'fname',
+              hintText: 'first name',
               icon: new Icon(
                 Icons.assignment ,
                 color: Colors.grey,

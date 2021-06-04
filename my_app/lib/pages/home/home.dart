@@ -1,27 +1,22 @@
 import 'dart:async';
-import 'package:my_app/services/authentication.dart';
-
 import 'package:flutter/material.dart';
 import 'package:my_app/services/http.dart';
-import 'package:my_app/pages/home/list-recipe.dart';
 import 'package:my_app/models/recipe.dart';
+import 'package:my_app/pages/home/detail.dart';
 
 class Home extends StatefulWidget {
-  Home({Key key, this.auth, this.userId, this.logoutCallback})
-      : super(key: key);
-  final BaseAuth auth;
-  final VoidCallback logoutCallback;
-  final String userId;
-
   @override
-  _HomeState createState() => _HomeState();
+  _HomeState createState() => new _HomeState();
 }
 
-class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
-  TabController controller;
-  final TextEditingController _controller = new TextEditingController();
+class _HomeState extends State<Home> {
+  bool _isSearching;
+  String _searchText = "";
+  List searchresult = new List();
+  String searchString = "";
+
   final HttpService httpService = HttpService();
-  // List<AddFood> loadedFoods = [];
+
   int getColorHexFromStr(String colorStr) {
     colorStr = "FF" + colorStr;
     colorStr = colorStr.replaceAll("#", "");
@@ -44,20 +39,29 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     return val;
   }
 
-  bool _isSearching;
-  String _searchText = "";
-  List searchresult = new List();
-  String searchString = "";
+  Widget appBarTitle = new Text(
+    "Search Example",
+    style: new TextStyle(color: Colors.white),
+  );
+  Icon icon = new Icon(
+    Icons.search,
+    color: Colors.red,
+  );
+  final globalKey = new GlobalKey<ScaffoldState>();
+  final TextEditingController _controller = new TextEditingController();
+  List<dynamic> _list;
 
-  _SearchListState() {
+  _HomeState() {
     _controller.addListener(() {
       if (_controller.text.isEmpty) {
         setState(() {
+          _getData();
           _isSearching = false;
           _searchText = "";
         });
       } else {
         setState(() {
+          _getData();
           _isSearching = true;
           _searchText = _controller.text;
         });
@@ -67,256 +71,258 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    // _querystring = "";
     super.initState();
     _isSearching = false;
-    // var request = http.Request(
-    //     'GET',
-    //     Uri.parse('http://localhost:3030/recipe?'));
-    // http.StreamedResponse response = await request.send();
-    // Map<String, dynamic> responseJson =
-    //     jsonDecode(await response.stream.bytesToString());
-    // userId = responseJson["_id"];
-    // print('Signed in: $userId');
   }
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    controller.dispose();
-    super.dispose();
-  }
+  Future<List<Recipe>> _getData() async {
+    print(_searchText);
+    var values = httpService.findRecipe(_searchText);
+    await new Future.delayed(new Duration(seconds: 1));
 
-  void searchOperation(String searchText) {
-    searchresult.clear();
-    if (_isSearching != null) {
-      print(searchText);
-      // for (int i = 0; i < _list.length; i++) {
-      //   String data = _list[i];
-      //   if (data.toLowerCase().contains(searchText.toLowerCase())) {
-      //     searchresult.add(data);
-      //   }
-      // }
-    }
+    return values;
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // body: MyWidget());
-      body: ListView(
-        children: <Widget>[
-          Column(
-            children: <Widget>[
-              Stack(
-                children: <Widget>[
-                  Container(
-                    height: 200.0,
-                    width: double.infinity,
-                    color: Color(getColorHexFromStr('#FF2C00')),
-                  ),
-                  Positioned(
-                    bottom: 70.0,
-                    right: 150.0,
-                    child: Container(
-                      height: 300.0,
-                      width: 300.0,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(200.0),
-                          color: Color(getColorHexFromStr('#892612'))
-                              .withOpacity(0.4)),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 100.0,
-                    left: 150.0,
-                    child: Container(
-                        height: 300.0,
-                        width: 300.0,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(150.0),
-                            color: Color(getColorHexFromStr('#892612'))
-                                .withOpacity(0.5))),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      SizedBox(height: 15.0),
-                      Row(
-                        children: <Widget>[
-                          SizedBox(width: 20.0),
-                          Container(
-                            alignment: Alignment.topLeft,
-                            height: 50.0,
-                            width: 50.0,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25.0),
-                                border: Border.all(
-                                    color: Colors.white,
-                                    style: BorderStyle.solid,
-                                    width: 1.0),
-                                image: DecorationImage(
-                                    image: AssetImage(
-                                        'assets/images/Profile Image.png'))),
-                          ),
-                          SizedBox(
-                              width: MediaQuery.of(context).size.width - 120.0),
-                          SizedBox(height: 15.0),
-                        ],
-                      ),
-                      SizedBox(height: 50.0),
-                      Padding(
-                        padding: EdgeInsets.only(left: 15.0),
-                        child: Text(
-                          'Hello , Pino',
-                          style: TextStyle(
-                              fontFamily: 'Quicksand',
-                              fontSize: 30.0,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      SizedBox(height: 50.0),
-                      Padding(
-                        // search
-                        padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                        // child: new ListRecipe()
-                        child: Material(
-                          elevation: 5.0,
-                          borderRadius: BorderRadius.circular(5.0),
-                          child: TextFormField(
-                              controller: _controller,
-                              // onChanged: (value) {
-                              //   setState((){
-                              //     searchString = value;
-                              //   });
-                              // },
-                              decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  prefixIcon: Icon(Icons.search,
-                                      color:
-                                          Color(getColorHexFromStr('#FEDF62')),
-                                      size: 30.0),
-                                  contentPadding:
-                                      EdgeInsets.only(left: 15.0, top: 15.0),
-                                  hintText: 'Search',
-                                  hintStyle: TextStyle(
-                                      color: Colors.grey,
-                                      fontFamily: 'Quicksand'))),
-                        ),
-                      ),
-                      SizedBox(height: 10.0),
-                      // MyWidget()
-                    ],
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.0),
-              itemCard('FinnNavian', 'assets/ottomRan.jpg', false, 'sss'),
-              // itemCard('FinnNavian', 'assets/anotherchair.jpg', true),
-              // itemCard('FinnNavian', 'assets/chair.jpg', true)
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget itemCard(
-      String title, String imgPath, bool isFavorite, String description) {
-    return Padding(
-      padding: EdgeInsets.only(left: 15.0, right: 15.0, top: 15.0),
-      child: Container(
-        height: 150.0,
-        width: double.infinity,
-        color: Colors.white,
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 140.0,
-              height: 150.0,
-              decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage(imgPath), fit: BoxFit.cover)),
-            ),
-            SizedBox(width: 4.0),
-            Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Text(
-                      title,
-                      style: TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 17.0,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(width: 45.0),
-                    Material(
-                      elevation: isFavorite ? 0.0 : 2.0,
-                      borderRadius: BorderRadius.circular(20.0),
-                      child: Container(
-                        height: 40.0,
-                        width: 40.0,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
-                            color: isFavorite
-                                ? Colors.grey.withOpacity(0.2)
-                                : Colors.white),
-                        child: Center(
-                          child: isFavorite
-                              ? Icon(Icons.favorite_border)
-                              : Icon(Icons.favorite, color: Colors.red),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-                SizedBox(height: 5.0),
-                Container(
-                  width: 175.0,
-                  child: Text(
-                    description,
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                        fontFamily: 'Quicksand',
-                        color: Colors.grey,
-                        fontSize: 12.0),
-                  ),
-                ),
-                SizedBox(height: 5.0),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class MyWidget extends StatelessWidget {
-  final HttpService httpService = HttpService();
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-        body: FutureBuilder(
-            future: httpService.getRecipe(),
-            builder:
-                (BuildContext context, AsyncSnapshot<List<Recipe>> snapshot) {
-              print(snapshot);
-              print("snapshot");
-              if (snapshot.hasData) {
-                List<Recipe> recipes = snapshot.data;
-                print(recipes);
-                return ListView(
-                    children: recipes
-                        .map((Recipe recipe) => ListTile(
-                              title: Text(recipe.title),
-                              subtitle: Text(recipe.description.toString()),
-                            ))
-                        .toList());
-              }
-              return CircularProgressIndicator();
-            }));
+        appBar: AppBar(
+          title: Text("Yummy Trick"),
+        ),
+        key: globalKey,
+        body: Column(
+          children: [
+            Container(
+                height: 250.0,
+                child: new ListView(
+                  children: <Widget>[
+                    Column(
+                      children: <Widget>[
+                        Stack(
+                          children: <Widget>[
+                            Container(
+                              height: 200.0,
+                              width: double.infinity,
+                              color: Color(getColorHexFromStr('#FF2C00')),
+                            ),
+                            Positioned(
+                              bottom: 70.0,
+                              right: 150.0,
+                              child: Container(
+                                height: 300.0,
+                                width: 300.0,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(200.0),
+                                    color: Color(getColorHexFromStr('#892612'))
+                                        .withOpacity(0.4)),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 100.0,
+                              left: 150.0,
+                              child: Container(
+                                  height: 300.0,
+                                  width: 300.0,
+                                  decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.circular(150.0),
+                                      color:
+                                          Color(getColorHexFromStr('#892612'))
+                                              .withOpacity(0.5))),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                SizedBox(height: 15.0),
+                                Row(
+                                  children: <Widget>[
+                                    SizedBox(width: 20.0),
+                                    Container(
+                                      alignment: Alignment.topLeft,
+                                      height: 50.0,
+                                      width: 50.0,
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(25.0),
+                                          border: Border.all(
+                                              color: Colors.white,
+                                              style: BorderStyle.solid,
+                                              width: 1.0),
+                                          image: DecorationImage(
+                                              image: AssetImage(
+                                                  'assets/images/Profile Image.png'))),
+                                    ),
+                                    SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width -
+                                                120.0),
+                                    SizedBox(height: 15.0),
+                                  ],
+                                ),
+                                SizedBox(height: 50.0),
+                                Padding(
+                                  padding: EdgeInsets.only(left: 15.0),
+                                  child: Text(
+                                    'Hello',
+                                    style: TextStyle(
+                                        fontFamily: 'Quicksand',
+                                        fontSize: 30.0,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                SizedBox(height: 50.0),
+                                Padding(
+                                  // search
+                                  padding:
+                                      EdgeInsets.only(left: 15.0, right: 15.0),
+                                  // child: new ListRecipe()
+                                  child: Material(
+                                    elevation: 5.0,
+                                    borderRadius: BorderRadius.circular(5.0),
+                                    child: TextFormField(
+                                        controller: _controller,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            print(value);
+                                          });
+                                        },
+                                        decoration: InputDecoration(
+                                          border: InputBorder.none,
+                                          prefixIcon: Icon(Icons.search,
+                                              color: Color(getColorHexFromStr(
+                                                  '#FEDF62')),
+                                              size: 30.0),
+                                          contentPadding: EdgeInsets.only(
+                                              left: 15.0, top: 15.0),
+                                          hintText: 'Search',
+                                          hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontFamily: 'Quicksand'),
+                                          suffixIcon: IconButton(
+                                            onPressed: () => {
+                                              _controller.clear(),
+                                              _searchText = ""
+                                            },
+                                            icon: Icon(Icons.clear),
+                                          ),
+                                        )),
+                                  ),
+                                ),
+                                SizedBox(height: 10.0),
+                                // MyWidget()
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                )),
+            Expanded(
+                child: FutureBuilder(
+                    // future: httpService.getRecipe(),
+                    future: _getData(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<List<Recipe>> snapshot) {
+                      if (snapshot.hasData) {
+                        List<Recipe> recipes = snapshot.data;
+                        return ListView(
+                            children: recipes
+                                .map((Recipe recipe) => InkWell(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(
+                                            left: 15.0, right: 15.0, top: 15.0),
+                                        child: Container(
+                                          height: 120.0,
+                                          width: double.infinity,
+                                          color: Color(
+                                              getColorHexFromStr("#F5F5F5")),
+                                          child: Row(
+                                            children: <Widget>[
+                                              SizedBox(width: 15.0),
+                                              Container(
+                                                width: 80.0,
+                                                height: 80.0,
+                                                decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                        image: NetworkImage(
+                                                            recipe.images),
+                                                        fit: BoxFit.cover)),
+                                              ),
+                                              SizedBox(width: 10.0),
+                                              Column(
+                                                children: <Widget>[
+                                                  SizedBox(height: 10.0),
+                                                  Row(
+                                                    children: <Widget>[
+                                                      Text(
+                                                        recipe.title,
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontFamily:
+                                                                'Quicksand',
+                                                            fontSize: 18.0,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(height: 10.0),
+                                                  Container(
+                                                    width: 250.0,
+                                                    child: Text(
+                                                      recipe.description
+                                                          .toString(),
+                                                      textAlign: TextAlign.left,
+                                                      maxLines: 2,
+                                                      style: TextStyle(
+                                                          fontFamily:
+                                                              'Quicksand',
+                                                          color: Colors.black,
+                                                          fontSize: 10.0),
+                                                    ),
+                                                  ),
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      onTap: () => Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                 Detail(recipe: recipe))),
+                                    ))
+                                .toList());
+                      }
+                      return SizedBox(
+                        child: Transform.scale(
+                          scale: 0.1,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 20,
+                          ),
+                        ),
+                        width: 1000.0,
+                      );
+                    }))
+          ],
+        ));
   }
+
+  // void searchOperation(String searchText) {
+  //   searchresult.clear();
+  //   print(searchText);
+  //   print(searchresult);
+  //   if (_isSearching != null) {
+  //     for (int i = 0; i < _list.length; i++) {
+  //       String data = _list[i];
+  //       if (data.toLowerCase().contains(searchText.toLowerCase())) {
+  //         searchresult.add(data);
+  //       }
+  //     }
+  //   }
+  // }
 }

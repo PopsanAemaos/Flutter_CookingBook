@@ -46,6 +46,9 @@ class _FavoriteState extends State<Favorite> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+        appBar: AppBar(
+          title: Text("Favorite"),
+        ),
         body: FutureBuilder(
             future: httpService.getRecipe(),
             builder:
